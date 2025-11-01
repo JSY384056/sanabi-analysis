@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>산나비(SANABI) 레벨 디자인 인터랙티브 분석</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            background-color: #FDFBF8;
+            color: #3A3530;
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, 'Helvetica Neue', 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', sans-serif;
+        }
+        .card {
+            background-color: #FFFFFF;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            border: 1px solid #F3EDE8;
+        }
+        .nav-link {
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: #E09F56;
+            border-bottom-color: #E09F56;
+        }
+        .tab-link {
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            padding-bottom: 0.5rem;
+        }
+        .tab-link.active {
+            color: #E09F56;
+            border-bottom-color: #E09F56;
+            font-weight: 600;
+        }
+        .tab-panel {
+            display: none;
+        }
+        .tab-panel.active {
+            display: block;
+        }
+        .flow-diagram {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+        .flow-step {
+            flex: 1;
+            text-align: center;
+            padding: 1rem;
+            background-color: #F9FAFB;
+            border-radius: 0.5rem;
+            border: 1px solid #F3EDE8;
+            position: relative;
+        }
+        .flow-arrow {
+            flex-shrink: 0;
+            width: 2.5rem;
+            font-size: 1.5rem;
+            color: #E09F56;
+            text-align: center;
+            font-weight: bold;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+                max-height: 500px;
+            }
+        }
+        .chart-container-line {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 250px;
+            max-height: 350px;
+        }
+        @media (min-width: 768px) {
+            .chart-container-line {
+                height: 350px;
+                max-height: 400px;
+            }
+        }
+        .ttt-diagram {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        .ttt-step {
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            background-color: #F9FAFB;
+            color: #3A3530;
+            font-weight: 500;
+        }
+        .ttt-arrow {
+            display: flex;
+            align-items: center;
+            font-size: 1.25rem;
+            color: #E09F56;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+        <header class="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-F3EDE8 shadow-sm">
+        <nav class="container mx-auto px-4 md:px-6 py-4 flex justify-between items-center">
+            <h1 class="text-2xl font-bold" style="color: #E09F56;">SANABI</h1>
+            <div class="flex space-x-2 md:space-x-6">
+                <a href="#overview" class="nav-link text-sm md:text-base font-medium text-gray-700">개요</a>
+                <a href="#analysis" class="nav-link text-sm md:text-base font-medium text-gray-700">핵심 3요소</a>
+                <a href="#difficulty" class="nav-link text-sm md:text-base font-medium text-gray-700">난이도 곡선</a>
+                <a href="#chapters" class="nav-link text-sm md:text-base font-medium text-gray-700">챕터별 상세</a>
+                <a href="#conclusion" class="nav-link text-sm md:text-base font-medium text-gray-700">결론</a>
+            </div>
+        </nav>
+    </header>
+
+        <main class="container mx-auto p-4 md:p-8">
+
+                <section id="overview" class="mb-12">
+            <h2 class="text-3xl font-bold mb-4 text-center">산나비(SANABI) 레벨 디자인 분석</h2>
+            <p class="text-lg text-center text-gray-600 mb-8 max-w-3xl mx-auto">
+            </p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div class="card p-6">
+                    <h3 class="text-xl font-semibold mb-3" style="color: #E09F56;">핵심 메카닉 (Core Mechanic)</h3>
+                    <p class="text-gray-700">
+                        <strong class="text-gray-900">'사슬팔(그래플링 훅)'</strong>을 이용한 고속 스윙 및 적 제압.
+                        게임의 모든 레벨 디자인은 이 '사슬팔'의 '쾌감'을 극대화하거나, '제한'을 가하는 방식으로 설계 됌.
+                    </p>
+                </div>
+
+                                <div class="card p-6">
+                    <h3 class="text-xl font-semibold mb-4" style="color: #E09F56;">게임의 전체 레벨 흐름 (3막 구조)</h3>
+                    <p class="text-gray-700 mb-4">
+                        게임 전체가 '기-승-전-결'의 명확한 감정 곡선과 난이도 설계를 따릅니다.
+                    </p>
+                    <div class="flow-diagram">
+                        <div class="flow-step">
+                            <h4 class="font-bold">1막    (챕터 1-2)</h4>
+                            <p class="text-sm text-gray-600">쾌감 / 학습</p>
+                        </div>
+                        <div class="flow-arrow">→</div>
+                        <div class="flow-step">
+                            <h4 class="font-bold">2막    (챕터 3-4)</h4>
+                            <p class="text-sm text-gray-600">심화 / 방해</p>
+                        </div>
+                        <div class="flow-arrow">→</div>
+                        <div class="flow-step">
+                            <h4 class="font-bold">3막    (챕터 5)</h4>
+                            <p class="text-sm text-gray-600">절정 / 반전</p>
+                        </div>
+                    </div>
+                </div>
+                
+                                <div class="md:col-span-2 mt-6 card p-6 text-center">
+                    <h3 class="text-xl font-semibold mb-3" style="color: #E09F56;">핵심 메카닉 시각화</h3>
+                    <img src="그래풀링 훅.gif" alt="산나비 사슬팔 플레이 GIF" class="mx-auto rounded-lg shadow-lg" style="max-width: 100%; height: auto; border: 2px solid #E09F56;">
+                    <p class="text-sm text-gray-400 mt-2">사슬팔을 이용한 고속 이동과 전투가 산나비의 핵심 재미입니다.</p>
+                </div>
+            </div>
+        </section>
+
+                <section id="analysis" class="mb-12 card p-6 md:p-8">
+            <h2 class="text-3xl font-bold mb-4 text-center">챕터별 핵심 3요소 비교</h2>
+            <p class="text-lg text-center text-gray-600 mb-8 max-w-3xl mx-auto">
+                <산나비>의 레벨 디자인 '이동', '시야', '사정거리'라는 3가지 요소 크게 작용한다고 조사했음. 그래서 챕터별로 어떻게 변주되는지에 따라 정의되는지 도형으로 표시함. 아래 차트는 이해를 돕기 위한 자료임 필요에 따라 텍스트 주겠음.
+            </p>
+            <div class="chart-container">
+                <canvas id="chapterRadarChart"></canvas>
+            </div>
+        </section>
+        
+                <section id="difficulty" class="mb-12 card p-6 md:p-8">
+            <h2 class="text-3xl font-bold mb-4 text-center">난이도 설계 (Design & Accessibility)</h2>
+            <p class="text-lg text-center text-gray-600 mb-8 max-w-3xl mx-auto">
+                <산나비>의 경험은 1) 챕터별로 의도된 '설계된 난이도'와 2) 플레이어가 선택하는 '접근성 옵션'의 두 가지 축으로 구성됩니다.
+            </p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                
+                                <div>
+                    <h3 class="text-xl font-semibold mb-3 text-center" style="color: #E09F56;">1. 설계된 난이도 곡선</h3>
+                    <p class="text-sm text-gray-600 mb-4 text-center">
+                        챕터 3에서 의도적인 '난이도 급등(Spike)'을 주어 플레이어에게 새로운 도전을 제시합니다.
+                    </p>
+                    <div class="chart-container-line" style="height: 300px; max-height: 350px;">
+                        <canvas id="chapterDifficultyChart"></canvas>
+                    </div>
+                </div>
+
+                                <div>
+                    <h3 class="text-xl font-semibold mb-3 text-center" style="color: #E09F56;">2. 플레이어 설정 난이도</h3>
+                    <p class="text-sm text-gray-600 mb-4 text-center">
+                        플레이어는 언제든 이 '설계된 곡선'의 기본값을 조절할 수 있습니다.
+                    </p>
+                    <div class="space-y-3">
+                        <div class="p-3 bg-green-50 rounded-md border border-green-200 shadow-sm">
+                            <strong class="font-bold text-green-700">● 쉬움 (Easy)</strong>
+                            <p class="text-sm text-gray-700 mt-1">체력이 줄어들지 않습니다. 쾌적한 진행과 스토리에 집중할 수 있습니다.</p>
+                        </div>
+                        <div class="p-3 bg-blue-50 rounded-md border border-blue-200 shadow-sm">
+                            <strong class="font-bold text-blue-700">● 보통 (Normal)</strong>
+                            <p class="text-sm text-gray-700 mt-1">일정 시간 피해를 입지 않으면, 체력이 '최대치'까지 회복됩니다. (표준)</p>
+                        </div>
+                        <div class="p-3 bg-yellow-50 rounded-md border border-yellow-200 shadow-sm">
+                            <strong class="font-bold text-yellow-700">● 베테랑 (Veteran)</strong>
+                            <p class="text-sm text-gray-700 mt-1">일정 시간 피해를 입지 않으면, 체력이 '절반'까지만 회복됩니다.</p>
+                        </div>
+                        <div class="p-3 bg-red-50 rounded-md border border-red-200 shadow-sm">
+                            <strong class="font-bold text-red-700">● 전설 (Legendary)</strong>
+                            <p class="text-sm text-gray-700 mt-1">단 한 번의 피격으로 사망합니다. (하드코어 모드)</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+                <section id="chapters" class="mb-12">
+            <h2 class="text-3xl font-bold mb-4 text-center">챕터별 상세 분석</h2>
+            <p class="text-lg text-center text-gray-600 mb-8 max-w-3xl mx-auto">
+                각 챕터에 따른 분석 결과
+            </p>
+
+                        <div class="flex flex-wrap justify-center border-b border-gray-200 mb-6 gap-x-4 md:gap-x-8">
+                <button class="tab-link active" data-tab="tab1">챕터 1: 프롤로그</button>
+                <button class="tab-link" data-tab="tab2">챕터 2: 상층 도시</button>
+                <button class="tab-link" data-tab="tab3">챕터 3: 공업 단지</button>
+                <button class="tab-link" data-tab="tab4">챕터 4: 하층민/코어</button>
+                <button class="tab-link" data-tab="tab5">챕터 5: 진실</button>
+            </div>
+
+                        <div class="card p-6 md:p-8">
+                                <div id="tab1" class="tab-panel active">
+                    <h3 class="text-2xl font-bold mb-2" style="color: #E09F56;">챕터 1: 프롤로그</h3>
+                    <p class="text-lg text-gray-700 mb-6 font-medium">'사슬팔의 기본 조작(튜토리얼)을 안전하게 학습시키는 구간.'</p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <h4 class="text-lg font-semibold mb-3">레벨 디자인 3요소</h4>
+                            <ul class="list-disc list-inside space-y-2 text-gray-700">
+                                <li><strong>이동 (Movement):</strong> 거의 수평적, 선형적 구조. 완급 조절은 '느림', '학습'에 초점. 이긴 한데 좀 답답한 감이 머잖아 있었음. 쉽게 말해 뚝딱 거리는 느낌?</li>
+                                <li><strong>시야 (Sight):</strong> 카메라 줌인. 튜토리얼 UI가 시야를 통해 직접 정보 전달.</li>
+                                <li><strong>사정거리 (Range):</strong> 매우 짧고 명확한 스윙 구간. 실패해도 잦은 세이브 구간으로 쉽게 클리어 함.</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 class="text-lg font-semibold mb-3">학습 곡선 (Teach-Test-Twist)</h4>
+                            <ul class="list-disc list-inside space-y-2 text-gray-700">
+                                <li><strong>Teach:</strong> `WAD`(이동), `Space`(점프), `클릭`(스윙) 순차적 학습.</li>
+                                <li><strong>Test:</strong> 스윙으로만 넘을 수 있는 작은 절벽 배치.</li>
+                            </ul>
+                        </div>
+
+                                                <div class="md:col-span-2 mt-4 card p-6 text-center">
+                            <h4 class="text-lg font-semibold mb-3" style="color: #E09F56;">튜토리얼 조작 예시</h4>
+                            <img src="조작-튜토리얼-1.gif" alt="산나비 튜토리얼 조작 GIF" class="mx-auto rounded-lg shadow-lg" style="max-width: 100%; height: auto; border: 2px solid #E09F56;">
+                            <p class="text-sm text-gray-400 mt-2">초반 튜토리얼을 통해 사슬팔 조작의 기초를 익힐 수 있습니다.</p>
+                        </div>
+
+                        <div class="md:col-span-2">
+                            <h4 class="text-lg font-semibold mb-3">챕터 1 평가</h4>
+                            <ul class="space-y-2">
+                                <li class="flex items-center"><span class="text-green-500 font-bold mr-2 text-xl">✔</span><strong class="mr-2">Good:</strong> 실패의 두려움 없이 핵심 메카닉을 직관적으로 학습.</li>
+                                <li class="flex items-center"><span class="text-yellow-500 font-bold mr-2 text-xl">✖</span><strong class="mr-2">Bad:</strong> (사소함) 숙련자에게는 다소 느린 템포일 수 있으나 목적에 부합.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                                <div id="tab2" class="tab-panel">
+                    <h3 class="text-2xl font-bold mb-2" style="color: #E09F56;">챕터 2: 상층 도시</h3>
+                    <p class="text-lg text-gray-700 mb-6 font-medium">'학습한 스윙을 '넓은 공간'에서 활용 하며 전투.'</p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <h4 class="text-lg font-semibold mb-3">레벨 디자인 3요소</h4>
+                            <ul class="list-disc list-inside space-y-2 text-gray-700">
+                                <li><strong>이동 (Movement):</strong> 광활한 수직/수평 공간. 땅을 밟지 않는 '흐름(Flow)' 유도. 완급 '매우 빠름'.</li>
+                                <li><strong>시야 (Sight):</strong> 카메라 '줌아웃'으로 시야 극적 확대. 다음 스윙 포인트 인지 및 배경(야경) 감상.</li>
+                                <li><strong>사정거리 (Range):</strong> '최대 사정거리' 스윙으로 쾌감 부여. 쉬프트 키를 활용한 ('대시') 추가로 이동 사정거리 확장.</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 class="text-lg font-semibold mb-3">학습 곡선 (Teach-Test-Twist)</h4>
+                            <div class="ttt-diagram mb-4">
+                                <span class="ttt-step">Teach</span>
+                                <span class="ttt-arrow">→</span>
+                                <span class="ttt-step">Test</span>
+                                <span class="ttt-arrow">→</span>
+                                <span class="ttt-step">Twist</span>
+                            </div>
+                            <ul class="list-disc list-inside space-y-2 text-gray-700">
+                                <li><strong>Teach:</strong> '대시' 메카닉, '연속 스윙' 개념.</li>
+                                <li><strong>Test:</strong> '대시'로만 파괴 가능한 장애물. '스윙 + 대시'가 필요한 구간.</li>
+                                <li><strong>Twist:</strong> (챕터 1) 스윙 + (챕터 2) 대시 + 벽타기를 복합적으로 활용한 스테이지 클리어법.</li>
+                            </ul>
+                        </div>
+                        
+                                                <div class="md:col-span-2 mt-4 card p-6 text-center">
+                            <h4 class="text-lg font-semibold mb-3" style="color: #E09F56;">상층 도시 전체 맵 구조 (참고)</h4>
+                            <img src="챕터1의 전체 맵.jpg" alt="챕터 2 상층 도시 전체 맵 이미지" class="mx-auto rounded-lg shadow-lg" style="max-width: 80%; height: auto; border: 2px solid #E09F56;">
+                            <p class="text-sm text-gray-400 mt-2">광활한 상층 도시의 구조를 한눈에 볼 수 있습니다. (클릭 확대 불가)</p>
+                        </div>
+                        
+                        <div class="md:col-span-2">
+                            <h4 class="text-lg font-semibold mb-3">챕터 2 평가</h4>
+                            <ul class="space-y-2">
+                                <li class="flex items-center"><span class="text-green-500 font-bold mr-2 text-xl">✔</span><strong class="mr-2">Good:</strong> 솔직히 이때가 제일 재밌었던거 같긴함 게임의 재미만 따져보았을 땐.</li>
+                                <li class="flex items-center"><span class="text-yellow-500 font-bold mr-2 text-xl">✖</span><strong class="mr-2">Bad:</strong> 일부 구간은 길이 헷갈릴 수 있음. 세번 정돈가 해맸고 배치가 좀 어려웠던거같음 많이 죽었다는 얘기</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                                <div id="tab3" class="tab-panel">
+                    <h3 class="text-2xl font-bold mb-2" style="color: #E09F56;">챕터 3: 공업 단지</h3>
+                    <p class="text-lg text-gray-700 mb-6 font-medium">이때 약간 부정기였음 좀 오싹한 이미지이긴 하나 난이도가 너무 어려워서'</p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <h4 class="text-lg font-semibold mb-3">레벨 디자인 3요소</h4>
+                            <ul class="list-disc list-inside space-y-2 text-gray-700">
+                                <li><strong>이동 (Movement):</strong> '벽 타기 불가 지형이 많이 존재에 따른 제한이 있음. 새로운 스킬로 인해 좋은 면도 있으나, 즉사 함정으로 템포 강제 조절.</li>
+                                <li><strong>시야 (Sight):</strong> 처음엔 공장 불이 켜졌있다는 이유로 밝았음 근데, 특정 스토리 진행하고 나서 불이 꺼진후 부터는 좀 불쾌했음.</li>
+                                <li><strong>사정거리 (Range):</strong> **'방패병'** 등장. '사정거리' 내로 접근해 방패를 뺏어야 함. '전투' 사슬팔로 심화.</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 class="text-lg font-semibold mb-3">학습 곡선 (Teach-Test-Twist)</h4>
+                            <div class="ttt-diagram mb-4">
+                                <span class="ttt-step">Teach</span>
+                                <span class="ttt-arrow">→</span>
+                                <span class="ttt-step">Test</span>
+                                <span class="ttt-arrow">→</span>
+                                <span class="ttt-step">Twist</span>
+                            </div>
+                            <ul class="list-disc list-inside space-y-2 text-gray-700">
+                                <li><strong>Teach:</strong> '붉은 벽' 기믹, '방패병' 대처법(방패 뺏기).</li>
+                                <li><strong>Test:</strong> '붉은 벽' 점프 퍼즐, '방패병' 1:1 전투.</li>
+                                <li><strong>Twist:</strong> '붉은 벽' + '함정' + '저격수' + '방패병'이 모두 등장하는 복합 전투 구간.</li>
+                            </ul>
+                        </div>
+                        <div class="md:col-span-2">
+                            <h4 class="text-lg font-semibold mb-3">챕터 3 평가</h4>
+                            <ul class="space-y-2">
+                                <li class="flex items-center"><span class="text-green-500 font-bold mr-2 text-xl">✔</span><strong class="mr-2">Good:</strong> 메카닉의 '응용편'. 전투의 깊이가 생기고 사슬팔의 쓰임새가 다양해짐.</li>
+                                <li class="flex items-center"><span class="text-red-500 font-bold mr-2 text-xl">✖</span><strong class="mr-2">Bad:</strong> **난이도 급등.** '저격수'의 첫 등장은 '시야 밖' 공격이라 불쾌한 경험(Unfair)을 유발.</li>
+                            </ul>
+                        </div>
+                        
+                                                <div class="md:col-span-2 mt-6 card p-6 text-center">
+                            <h4 class="text-lg font-semibold mb-3" style="color: #E09F56;">챕터 완료 및 다음 단계로의 전환</h4>
+                            <img src="챕터 클리어 암시.gif" alt="스테이지 클리어 전환 암시 GIF" class="mx-auto rounded-lg shadow-lg" style="max-width: 100%; height: auto; border: 2px solid #E09F56;">
+                            <p class="text-sm text-gray-400 mt-2">각 챕터의 성공적인 완료는 새로운 도전과 스토리를 예고합니다.</p>
+                        </div>
+
+                    </div>
+                </div>
+
+                                <div id="tab4" class="tab-panel">
+                    <h3 class="text-2xl font-bold mb-2" style="color: #E09F56;">챕터 4: 하층민 구역 / 코어</h3>
+                    <p class="text-lg text-gray-700 mb-6 font-medium">'스토리의 심화 및 절정. 배운 모든 것을 활용하는 '종합 시험'으로서의 '보스전' 챕터.</p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <h4 class="text-lg font-semibold mb-3">레벨 디자인 3요소</h4>
+                            <ul class="list-disc list-inside space-y-2 text-gray-700">
+                                <li><strong>이동 (Movement):</strong> 고속 '탈출 시퀀스'(챕터 2 스타일)와 '전투 아레나'(챕터 3 스타일)가 혼합됨.</li>
+                                <li><strong>시야 (Sight):</strong> 보스전(저스티스)에서 카메라 '고정' 및 '줌아웃'. '글리치' 효과가 시야를 방해하며 스토리 암시.</li>
+                                <li><strong>사정거리 (Range):</strong> 보스전 자체가 '사정거리'의 집약체. '탄환'을 '사슬팔'로 잡아채 반격(패링)해야 함.</li>
+                                <li><strong>난이도:</strong> 어려움 (Hard). 챕터 3에서 숙련된 스킬을 종합적으로 테스트함.</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 class="text-lg font-semibold mb-3">학습 곡선 (Teach-Test-Twist)</h4>
+                            <div class="ttt-diagram mb-4">
+                                <span class="ttt-step">Teach</span>
+                                <span class="ttt-arrow">→</span>
+                                <span class="ttt-step">Test (종합)</span>
+                                <span class="ttt-arrow">→</span>
+                                <span class="ttt-step">Twist (변형)</span>
+                            </div>
+                            <ul class="list-disc list-inside space-y-2 text-gray-700">
+                                <li><strong>Teach:</strong> 보스의 새로운 패턴 (예: 탄환 반격).</li>
+                                <li><strong>Test:</strong> 보스전 자체가 챕터 1~4까지 배운 모든 것의 '종합 시험'.</li>
+                                <li><strong>Twist:</strong> 보스의 2, 3페이즈로 넘어가며 패턴이 '변형(Twist)'되어 적응력을 시험.</li>
+                            </ul>
+                        </div>
+                        <div class="md:col-span-2">
+                            <h4 class="text-lg font-semibold mb-3">챕터 4 평가</h4>
+                            <ul class="space-y-2">
+                                <li class="flex items-center"><span class="text-green-500 font-bold mr-2 text-xl">✔</span><strong class="mr-2">Good:</strong> 핵심 메카닉(사슬팔)을 보스전에 천재적으로 녹여냄. '컨트롤' 자체가 공략의 핵심.</li>
+                                <li class="flex items-center"><span class="text-yellow-500 font-bold mr-2 text-xl">✖</span><strong class="mr-2">Bad:</strong> 일부 보스 패턴은 '시야'로 인지하기 어려워 반복적인 죽음을 유발할 수 있음.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                                <div id="tab5" class="tab-panel">
+                    <h3 class="text-2xl font-bold mb-2" style="color: #E09F56;">챕터 5: 진실 / 화이트 룸 / 속죄</h3>
+                    <p class="text-lg text-gray-700 mb-6 font-medium">'감정의 절정. 스토리텔링을 위해 플레이어가 가장 아끼던 것을 '의도적으로 박탈'한다.' (메카닉-서사 일치)</p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <h4 class="text-lg font-semibold mb-3">레벨 디자인 3요소</h4>
+                            <ul class="list-disc list-inside space-y-2 text-gray-700">
+                                <li><strong>이동 (Movement):</strong> **'사슬팔'과 '대시' 메카닉의 완전한 박탈.** 오직 '느리게 걷기'만 가능. '가장 빠른 속도'를 즐기던 플레이어에게 '가장 느린 속도'를 강제하여 절망감을 체감시킴.</li>
+                                <li><strong>시야 (Sight):</strong> '화이트 룸', '글리치' 연출. '시야'는 길 찾기가 아닌, 주인공의 '과거 기억(텍스트)'을 전달하는 스크린으로 작동.</li>
+                                <li><strong>사정거리 (Range):</strong> **'0'.** 모든 '사정거리'(행동 반경) 차단. 주인공의 무력감을 동일시.</li>
+                                <li><strong>난이도:</strong> (메카닉: 0) / (감정: 10). 조작 난이도는 없으나 감정적 임팩트가 극대화됨.</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 class="text-lg font-semibold mb-3">학습 곡선 (Teach-Test-Twist)</h4>
+                            <div class="ttt-diagram mb-4">
+                                <span class="ttt-step" style="background-color: #E09F56; color: white;">학습의 전복 (Subversion)</span>
+                            </div>
+                            <ul class="list-disc list-inside space-y-2 text-gray-700">
+                                <li><strong>(전복):</strong> 이 챕터는 '가르치는' 것이 아니라, 플레이어가 '학습한 모든 것'을 '빼앗음'으로써 서사를 전달함.</li>
+                                <li><strong>(이후 '속죄' 구간):</strong> 모든 메카닉이 돌아오며 배운 모든 것을 활용한 마지막 '질주(Final Run)' 시작.</li>
+                            </ul>
+                        </div>
+                        <div class="md:col-span-2">
+                            <h4 class="text-lg font-semibold mb-3">챕터 5 평가</h4>
+                            <ul class="space-y-2">
+                                <li class="flex items-center"><span class="text-green-500 font-bold mr-2 text-xl">✔</span><strong class="mr-2">Good:</strong> 게임 역사상 가장 뛰어난 '메카닉-서사 일치' 연출. 컷신보다 강력하게 감정을 뒤흔듦.</li>
+                                <li class="flex items-center"><span class="text-green-500 font-bold mr-2 text-xl">✔</span><strong class="mr-2">Bad:</strong> (디자인적 단점 없음)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+                <section id="conclusion" class="card p-6 md:p-8">
+            <h2 class="text-3xl font-bold mb-6 text-center">종합 평가</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <h3 class="text-xl font-semibold mb-3 text-green-600">Good (잘된 점)</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-700">
+                        <li>3요소(이동, 시야, 사정거리)를 튜토리얼을 통한 난이도 익힘.</li>
+                        <li>챕터 5 속 두 갈래길을 통한 다른 결말 구조 (아래 vs 위).</li>
+                        <li>'사슬팔' 단 하나로 이동, 전투, 퍼즐, 서사 모든 것을 해결.</li>
+                        <li>미친 스토리텔링.</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-xl font-semibold mb-3 text-red-600">Bad (아쉬운 점)</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-700">
+                        <li>챕터 3의 난이도가 챕터 2 대비 급격하게 상승. 무엇보다 눈뽕(시각적 피로).</li>
+                        <li>챕터 3 세이브 포인트가 멀고 기믹 배치가 불쾌한 경험을 유발.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="text-center py-6 mt-8 border-t border-F3EDE8">
+        <p class="text-gray-500">인터랙티브 레벨 디자인 분석 | 2025</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // --- Navigation Scroll ---
+            document.querySelectorAll('.nav-link').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('href');
+                    const targetElement = document.querySelector(targetId);
+                    if (targetElement) {
+                        // Offset for sticky header
+                        const headerOffset = document.querySelector('header').offsetHeight + 20;
+                        const elementPosition = targetElement.getBoundingClientRect().top;
+                        const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+        
+                        window.scrollTo({
+                            top: offsetPosition,
+                            behavior: "smooth"
+                        });
+                        
+                        // Active link styling
+                        document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+                        this.classList.add('active');
+                    }
+                });
+            });
+
+            // --- Tab Navigation ---
+            const tabLinks = document.querySelectorAll('.tab-link');
+            const tabPanels = document.querySelectorAll('.tab-panel');
+
+            tabLinks.forEach(link => {
+                link.addEventListener('click', function () {
+                    const tabId = this.getAttribute('data-tab');
+
+                    // Update links
+                    tabLinks.forEach(link => link.classList.remove('active'));
+                    this.classList.add('active');
+
+                    // Update panels
+                    tabPanels.forEach(panel => {
+                        if (panel.id === tabId) {
+                            panel.classList.add('active');
+                        } else {
+                            panel.classList.remove('active');
+                        }
+                    });
+                });
+            });
+
+            // --- Radar Chart ---
+            const ctx = document.getElementById('chapterRadarChart').getContext('2d');
+            const radarChartData = {
+                labels: ['이동 (흐름)', '시야 (유도/제한)', '사정거리 (복잡도)'],
+                datasets: [
+                    {
+                        label: '챕터 1: 프롤로그',
+                        data: [2, 3, 1],
+                        backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                        borderColor: 'rgba(59, 130, 246, 1)',
+                        borderWidth: 2,
+                        pointBackgroundColor: 'rgba(59, 130, 246, 1)',
+                    },
+                    {
+                        label: '챕터 2: 상층 도시',
+                        data: [10, 8, 5],
+                        backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                        borderColor: 'rgba(16, 185, 129, 1)',
+                        borderWidth: 2,
+                        pointBackgroundColor: 'rgba(16, 185, 129, 1)',
+                    },
+                    {
+                        label: '챕터 3: 공업 단지',
+                        data: [4, 4, 8],
+                        backgroundColor: 'rgba(239, 68, 68, 0.2)',
+                        borderColor: 'rgba(239, 68, 68, 1)',
+                        borderWidth: 2,
+                        pointBackgroundColor: 'rgba(239, 68, 68, 1)',
+                    },
+                    {
+                        label: '챕터 4: 하층민/코어',
+                        data: [8, 6, 10],
+                        backgroundColor: 'rgba(139, 92, 246, 0.2)',
+                        borderColor: 'rgba(139, 92, 246, 1)',
+                        borderWidth: 2,
+                        pointBackgroundColor: 'rgba(139, 92, 246, 1)',
+                    },
+                    {
+                        label: '챕터 5: 진실',
+                        data: [0, 10, 0],
+                        backgroundColor: 'rgba(245, 158, 11, 0.2)',
+                        borderColor: 'rgba(245, 158, 11, 1)',
+                        borderWidth: 2,
+                        pointBackgroundColor: 'rgba(245, 158, 11, 1)',
+                    }
+                ]
+            };
+            
+            new Chart(ctx, {
+                type: 'radar',
+                data: radarChartData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            angleLines: {
+                                color: '#E5E7EB'
+                            },
+                            grid: {
+                                color: '#E5E7EB'
+                            },
+                            pointLabels: {
+                                font: {
+                                    size: 14,
+                                    weight: '600'
+                                },
+                                color: '#3A3530'
+                            },
+                            ticks: {
+                                beginAtZero: true,
+                                max: 10,
+                                stepSize: 2,
+                                backdropColor: 'rgba(255, 255, 255, 0.75)',
+                                color: '#786D64'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: '#3A3530',
+                                font: {
+                                    size: 12
+                                }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                title: function(tooltipItems) {
+                                    const item = tooltipItems[0];
+                                    let label = item.chart.data.labels[item.dataIndex];
+                                    if (Array.isArray(label)) {
+                                      return label.join(' ');
+                                    } else {
+                                      return label;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // --- Line Chart (Difficulty) ---
+            const ctxLine = document.getElementById('chapterDifficultyChart').getContext('2d');
+            const lineChartData = {
+                labels: ['챕터 1: 프롤로그', '챕터 2: 상층 도시', '챕터 3: 공업 단지', '챕터 4: 하층민/코어', '챕터 5: 진실'],
+                datasets: [{
+                    label: '체감 난이도',
+                    data: [1, 3, 8, 7, 2],
+                    fill: true,
+                    backgroundColor: 'rgba(239, 68, 68, 0.2)',
+                    borderColor: 'rgba(239, 68, 68, 1)',
+                    tension: 0.1,
+                    pointBackgroundColor: 'rgba(239, 68, 68, 1)'
+                }]
+            };
+            
+            new Chart(ctxLine, {
+                type: 'line',
+                data: lineChartData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 10,
+                            title: {
+                                display: true,
+                                text: '체감 난이도 (1-10)',
+                                color: '#3A3530',
+                                font: { size: 14 }
+                            },
+                            grid: { color: '#F3EDE8' },
+                            ticks: { color: '#786D64' }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: '#786D64' }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                title: function(tooltipItems) {
+                                    const item = tooltipItems[0];
+                                    let label = item.chart.data.labels[item.dataIndex];
+                                    if (Array.isArray(label)) {
+                                      return label.join(' ');
+                                    } else {
+                                      return label;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
